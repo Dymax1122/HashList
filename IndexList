@@ -1,0 +1,257 @@
+public class IndexList {
+
+	//private static final short HIGHEST_SHIFT = 15;
+
+	//private static final short LOWEST_BIT = 1;
+
+	//private static final short HIGHEST_BIT = (short) (1 << 15);
+
+
+	public static final short BIT_0 = 0;
+	public static final int BIT_1 = 1;
+
+//	public static final short BIT_FULL_16 = (short) -1;
+//
+//	public static final short BIT_FULL_8 = (short) 255;
+//
+//	public static final short BIT_FULL_4 = (short) 15;
+//
+//	public static final short BIT_FULL_2 = (short) 3;
+
+
+	public static final int BIT_ONE_16 = 32768;
+
+	public static final int BIT_ONE_8 = 128;
+
+	public static final int BIT_ONE_4 = 8;
+
+	public static final int BIT_ONE_2 = 2;
+
+
+
+
+
+	public static int lowestSetBit(short s) {
+		return Integer.lowestOneBit(Short.toUnsignedInt(s)) - 1;
+//		//Integer.lowestOneBit(BIT_16);
+//		//Integer.numberOfTrailingZeros(s);
+//		return (s << 12)            |
+//	               ((s & 0xff00) << 4)  |
+//	               ((s >>> 4) & 0xff00) |
+//	               (s >>> 12);
+//		Integer.reverseBytes(s);
+//		//s = ~s & (s - BIT_1);
+//        //if (i <= 0) return i & 32;
+//        int n = 1;
+//        if (i > 1 << 16) { n += 16; i >>>= 16; }
+//        if (i > 1 <<  8) { n +=  8; i >>>=  8; }
+//        if (i > 1 <<  4) { n +=  4; i >>>=  4; }
+//        if (i > 1 <<  2) { n +=  2; i >>>=  2; }
+//        return n + (i >>> 1);
+//		if (s == 0) { return 0; }
+//    	if (s >= BIT_ONE_16) { return 15; }
+//    	int n = 1;
+//    	if (s >= BIT_8) { n += 8; s >>>= 8; }
+//    	if (s >= BIT_4) { n += 4; s >>>= 4; }
+//    	if (s >= BIT_2) { n += 2; s >>>= 2; }
+//    	return n;
+	}
+
+	public static int highestSetBit(short s) {
+        // HD, Count trailing 0's
+    	/*
+    	 * lets say
+    	 */
+		//Integer.lowestOneBit(s);
+		int bits = Short.toUnsignedInt(s);
+    	if (bits == BIT_0) { return 0; }
+    	//Short.compareUnsigned(s, s) ;
+    	if (bits >= BIT_ONE_16) { return 15; }
+    	int n = -1;
+    	if (bits >= BIT_ONE_8) { n += 8; bits >>>= 8; }
+    	if (bits >= BIT_ONE_4) { n += 4; bits >>>= 4; }
+    	if (bits >= BIT_ONE_2) { n += 2; bits >>>= 2; }
+    	//what if its an one
+    	return n + bits;
+    	//10110101
+    	//01001010 & 10110100
+    	//
+    	/*
+        i = ~i & (i - 1);
+        if (i <= 0) return i & 32;
+        int n = 1;
+        if (i > 1 << 16) { n += 16; i >>>= 16; }
+        if (i > 1 <<  8) { n +=  8; i >>>=  8; }
+        if (i > 1 <<  4) { n +=  4; i >>>=  4; }
+        if (i > 1 <<  2) { n +=  2; i >>>=  2; }
+        return n + (i >>> 1);
+        */
+    }
+
+	/*
+	 * should manipulate an index of booleans
+	 *
+	 * that can find out
+	 */
+
+	public static void benchmark() {
+		/*
+		 * basically, add and remove some points
+		 *
+		 * then find the highest point and lowest from these points
+		 *
+		 * can work from a simple set
+		 */
+
+		Set<Integer> random_add_values = new HashSet<Integer>();
+		Set<Integer> random_remove_values = new HashSet<Integer>();
+		Random r = new Random(124124123);
+		for (int i = 0; i < 1000; i++) {
+			random_add_values.add(r.nextInt(10000));
+			random_remove_values.add(r.nextInt(10000));
+		}
+
+		long start = System.currentTimeMillis();
+		Set<Integer> test_set = new HashSet<Integer>();
+		for (int add : random_add_values) {
+			test_set.add(add);
+		}
+		for (int remove : random_remove_values) {
+			test_set.remove(remove);
+		}
+		int highest = 0;
+		for (int t = 0; t < 1024; t++) {
+			Iterator<Integer> itr = test_set.iterator();
+			highest = itr.next();
+			for (int i : test_set) {
+				if (i > highest) {
+					highest = i;
+				}
+			}
+		}
+		System.out.println("Highest Value = " + highest);
+		System.out.println("Time Taken <HashSet> = " + (System.currentTimeMillis() - start));
+		start = System.currentTimeMillis();
+		HashList<Integer> hash_test = new HashList<Integer>();
+		for (int add : random_add_values) {
+			hash_test.add(add, add);
+		}
+		for (int remove : random_remove_values) {
+			hash_test.remove(remove);
+		}
+		for (int t = 0; t < 1024; t++) {
+			highest = hash_test.getLastValue();
+		}
+		System.out.println("Highest Value = " + highest);
+		System.out.println("Time Taken <HashList> = " + (System.currentTimeMillis() - start));
+
+		start = System.currentTimeMillis();
+		TreeMap<Integer, Integer> tree_test = new TreeMap<Integer, Integer>();
+		for (int add : random_add_values) {
+			tree_test.put(add, add);
+		}
+		for (int remove : random_remove_values) {
+			tree_test.remove(remove);
+		}
+		for (int t = 0; t < 1024; t++) {
+			highest = tree_test.lastKey();
+		}
+		System.out.println("Highest Value = " + highest);
+		System.out.println("Time Taken <TreeMap> = " + (System.currentTimeMillis() - start));
+
+		start = System.currentTimeMillis();
+		IndexList index_list = new IndexList();
+		for (int add : random_add_values) {
+			index_list.add(add);
+		}
+		for (int remove : random_remove_values) {
+			index_list.remove(remove);
+		}
+		for (int t = 0; t < 1024; t++) {
+			highest = index_list.getLastIndex();
+		}
+		System.out.println("Highest Value = " + highest);
+		System.out.println("Time Taken <IndexList> = " + (System.currentTimeMillis() - start));
+	}
+
+	private final List<Short> bit_list = new ArrayList<Short>();
+
+	public IndexList() {
+		BitSet bs = new BitSet();
+		bs.previousClearBit(1);
+		bs.and(bs);
+		//1, 2, 4, 16
+	}
+
+	public int getLastIndex() {
+		if (bit_list.isEmpty()) {
+			return -1;
+		}
+
+		int list_index = bit_list.size() - 1;
+		short bit = bit_list.get(list_index);
+		while (bit == 0) {
+			bit_list.remove(list_index);
+			bit = bit_list.get(--list_index);
+
+		}
+		//int list_index = bit_list.size() - 1;
+		//int value = bit_list.get(last_index);
+		//int high_bit = ;
+		//there is a chance that removal of the top will leave bits
+		return highestSetBit(bit_list.get(list_index)) + (16 * list_index);
+
+		//System.out.println("Index = " + index);
+		//System.out.println("Map Size = " + value_map.size());
+		//return value_map.get(index);
+	}
+
+	public void add(int index) {
+		setBit(index, true);
+	}
+
+	public void remove(int index) {
+		setBit(index, false);
+	}
+
+	public int getFirstIndex() {
+		if (bit_list.isEmpty()) {
+			return -1;
+		}
+		int list_index = 0;
+		short bit = bit_list.get(list_index);
+		while (bit == 0) {
+			bit = bit_list.get(++list_index);
+		}
+		//how to find the lowest without looping through the list
+		//System.out.println("Bit = " + Integer.toBinaryString(bit));
+		return lowestSetBit(bit) + list_index * 16;
+//		int index = Integer.lowestOneBit(bit);
+//		//System.out.println("Index = " + index);
+//		for (int i = 0; i < valid_index; i++) {
+//			index += 32;
+//		}
+//		//return value_map.get(index);
+//		return 0;
+	}
+
+	private void setBit(int index, boolean set) {
+
+		int list_index = index >> 4;
+		//int bit_index = index - (16 * list_index);
+		int bit_index = index % 16;
+		while (list_index >= bit_list.size()) {
+			bit_list.add(BIT_0);
+		}
+		int bit_array = bit_list.get(list_index);
+		int set_bit = 1 << bit_index;
+		bit_array = set ? bit_array | set_bit : bit_array & ~set_bit;
+		if (bit_array == 0 && bit_index == bit_list.size() - 1) {
+			bit_list.remove(bit_index);
+		}
+		else {
+			bit_list.set(list_index, (short) bit_array);
+		}
+	}
+
+}
